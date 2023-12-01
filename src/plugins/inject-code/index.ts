@@ -19,13 +19,8 @@ export function userscriptInjectCode(options: Options) {
 				}
 
 				const encoder = new TextEncoder()
-				for (const [i, file] of result.outputFiles.entries()) {
-					const resultFile = result.outputFiles[i]
 
-					if (!resultFile) {
-						continue
-					}
-
+				for (const file of result.outputFiles) {
 					const codeText = typeof code === "function" ? code(file) : code
 
 					let resultText = file.text
@@ -33,18 +28,18 @@ export function userscriptInjectCode(options: Options) {
 					if (at.includes("start")) {
 						resultText = source`
 							${codeText}
-							${resultFile}
+							${resultText}
 						`
 					}
 
 					if (at.includes("end")) {
 						resultText = source`
-							${resultFile}
+							${resultText}
 							${codeText}
 						`
 					}
 
-					resultFile.contents = encoder.encode(resultText)
+					file.contents = encoder.encode(resultText)
 				}
 			})
 		},
