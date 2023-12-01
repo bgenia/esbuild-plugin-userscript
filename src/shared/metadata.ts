@@ -165,7 +165,7 @@ export function formatMetadata(metadata: Metadata) {
 		)
 		.join("\n")
 
-	const formattedMetadata = `// ==UserScript==\n${joinedProperties}// ==/UserScript==`
+	const formattedMetadata = `// ==UserScript==\n${joinedProperties}\n// ==/UserScript==`
 
 	return formattedMetadata
 }
