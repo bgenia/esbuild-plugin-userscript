@@ -72,7 +72,7 @@ export function userscriptProxy(options: Options = {}) {
 					return
 				}
 
-				for (const file of result.outputFiles) {
+				for (const file of Array.from(result.outputFiles)) {
 					if (!validateTarget(file, options.targets)) {
 						continue
 					}
