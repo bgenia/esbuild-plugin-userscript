@@ -1,40 +1,22 @@
-import { source } from "common-tags"
+import { userscriptInjectCode } from "@/plugins/inject-code"
+import { applyPlugins } from "@/shared/applyPlugins"
 import { definePlugin } from "@/shared/definePlugin"
 import { formatMetadata, type Metadata } from "@/shared/metadata"
 
-type Options = {
-	metadata: Metadata
-}
+export type Options = Metadata
 
-export const userscriptMetadata = (options: Options) =>
-	definePlugin({
+export function userscriptMetadata(options: Options) {
+	return definePlugin({
 		name: "esbuild-plugin-userscript-metadata",
 		setup(build) {
-			build.onEnd((result) => {
-				if (!result.outputFiles) {
-					return
-				}
+			const metadata = formatMetadata(options)
 
-				const encoder = new TextEncoder()
-
-				const metadata = formatMetadata(options.metadata)
-
-				for (const [i, file] of result.outputFiles.entries()) {
-					const resultFile = result.outputFiles[i]
-
-					if (!resultFile) {
-						continue
-					}
-
-					resultFile.contents = encoder.encode(
-						source`
-							${metadata}
-
-
-							${file.text}
-						`,
-					)
-				}
-			})
+			applyPlugins(build, [
+				userscriptInjectCode({
+					at: ["start"],
+					code: `${metadata}\n\n`,
+				}),
+			])
 		},
 	})
+}

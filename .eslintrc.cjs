@@ -42,6 +42,8 @@ module.exports = configure({
 				},
 			],
 			"require-node-import-prefix/no-empty-import-prefix": "error",
+
+			"func-style": ["error", "declaration"],
 		},
 	},
 })

@@ -1,20 +1,24 @@
-import { userscriptMetadata } from "@/plugins/metadata"
-import { definePlugin } from "@/shared/definePlugin"
+import { resolveOptions, type UserscriptOptions } from "./options"
+import { userscriptInjectCode } from "./plugins/inject-code"
+import { userscriptMetadata } from "./plugins/metadata"
+import { userscriptProxy } from "./plugins/proxy"
+import { applyPlugins } from "./shared/applyPlugins"
+import { definePlugin } from "./shared/definePlugin"
 
-type Intersection<U> = (U extends U ? (_: U) => void : never) extends (
-	_: infer R,
-) => void
-	? R
-	: never
-
-type Options = Intersection<Parameters<(typeof plugins)[number]>[0]>
-
-export function userscript(options: Options) {
+export function userscript(options: UserscriptOptions) {
 	return definePlugin({
 		name: "esbuild-plugin-userscript",
 		setup(build) {
-			for (const plugin of plugins) {
-				plugin(options).setup(build)
+			const resolvedOptions = resolveOptions(options)
+
+			applyPlugins(build, [userscriptMetadata(resolvedOptions.metadata)])
+
+			for (const injection of resolvedOptions.inject) {
+				applyPlugins(build, [userscriptInjectCode(injection)])
+			}
+
+			if (resolvedOptions.proxy) {
+				applyPlugins(build, [userscriptProxy(resolvedOptions.proxy)])
 			}
 		},
 	})
@@ -22,8 +26,6 @@ export function userscript(options: Options) {
 
 export namespace userscript {
 	export const metadata = userscriptMetadata
+	export const injectCode = userscriptInjectCode
+	export const proxy = userscriptProxy
 }
-
-const plugins = Object.values(
-	userscript,
-) as (typeof userscript)[keyof typeof userscript][]
