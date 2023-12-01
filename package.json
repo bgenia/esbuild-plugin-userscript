@@ -1,6 +1,6 @@
 {
   "name": "esbuild-plugin-userscript",
-  "version": "0.2.0-dev.3",
+  "version": "0.2.0",
   "description": "ESbuild plugins for userscript engines",
   "type": "module",
   "exports": {
