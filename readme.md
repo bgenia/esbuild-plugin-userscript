@@ -4,7 +4,9 @@ ESbuild plugin(s) for userscripts.
 
 Available plugins:
 
+- `userscript-inject-code` - Injects code fragment into compiled userscript
 - `userscript-metadata` - Injects metadata comments
+- `userscript-proxy` - Generates proxy scripts to bypass browser cache
 
 ## Usage
 
