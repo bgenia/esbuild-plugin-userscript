@@ -22,9 +22,15 @@
     "readme.md"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint \"src/**/*.{js,mjs,cjs}\"",
-    "lint:fix": "eslint \"src/**/*.{js,mjs,cjs}\" --fix"
+    "build:bundle": "tsup",
+    "build": "pnpm lint && pnpm build:bundle",
+    "lint:eslint": "eslint src",
+    "lint:tsc": "tsc",
+    "lint": "pnpm lint:tsc && pnpm lint:eslint",
+    "prepublishOnly": "pnpm build",
+    "release": "pnpm version -m 'chore(release): %s' --",
+    "postversion": "git push && git push --tags",
+    "lint:fix": "eslint src --fix"
   },
   "devDependencies": {
     "@swc/core": "^1.3.100",
