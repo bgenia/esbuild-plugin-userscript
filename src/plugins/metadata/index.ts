@@ -1,3 +1,4 @@
+import { source } from "common-tags"
 import { definePlugin } from "@/shared/definePlugin"
 import { formatMetadata, type Metadata } from "@/shared/metadata"
 
@@ -26,7 +27,12 @@ export const userscriptMetadata = (options: Options) =>
 					}
 
 					resultFile.contents = encoder.encode(
-						`${metadata}\n\n\n${file.text}`,
+						source`
+							${metadata}
+
+
+							${file.text}
+						`,
 					)
 				}
 			})

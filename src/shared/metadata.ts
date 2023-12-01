@@ -1,5 +1,7 @@
 // Based on trim21/userscript-metadata-generator
 
+import { source } from "common-tags"
+
 export namespace Metadata {
 	export type Author =
 		| string
@@ -165,7 +167,11 @@ export function formatMetadata(metadata: Metadata) {
 		)
 		.join("\n")
 
-	const formattedMetadata = `// ==UserScript==\n${joinedProperties}\n// ==/UserScript==`
+	const formattedMetadata = source`
+		// ==UserScript==
+		${joinedProperties}
+		// ==/UserScript==
+	`
 
 	return formattedMetadata
 }
