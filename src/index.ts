@@ -1,4 +1,5 @@
 import { userscriptMetadata } from "@/plugins/metadata"
+import { userscriptProxy } from "@/plugins/proxy"
 import { definePlugin } from "@/shared/definePlugin"
 
 type Intersection<U> = (U extends U ? (_: U) => void : never) extends (
@@ -22,6 +23,7 @@ export function userscript(options: Options) {
 
 export namespace userscript {
 	export const metadata = userscriptMetadata
+	export const proxy = userscriptProxy
 }
 
 const plugins = Object.values(
