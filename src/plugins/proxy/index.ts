@@ -1,6 +1,7 @@
 import { source } from "common-tags"
-import type { OutputFile } from "esbuild"
+import type { OutputFile, PluginBuild } from "esbuild"
 import { createHash } from "node:crypto"
+import { relative } from "node:path"
 import { definePlugin } from "@/shared/definePlugin"
 import { formatMetadata, type Metadata } from "@/shared/metadata"
 
@@ -12,14 +13,19 @@ export type Options = {
 	targets?: ProxyTargets
 }
 
-function createProxyScript(target: OutputFile, options: Options) {
+function createProxyScript(
+	build: PluginBuild,
+	target: OutputFile,
+	options: Options,
+) {
 	const metadata: Metadata = {
 		...options.metadata,
 		grant: ["GM.xmlHttpRequest", ...(options.metadata?.grant ?? [])],
-		connect: ["127.0.0.1", ...[options.metadata?.connect ?? ""].flat()],
+		connect: ["127.0.0.1", ...[options.metadata?.connect ?? []].flat()],
 	}
 
-	const path = target.path.replace(/\.[^.]*?$/, ".proxy$&")
+	const filePath = target.path.replace(/\.[^.]*?$/, ".proxy$&")
+	const proxyPath = relative(build.initialOptions.outdir ?? "dist", filePath)
 
 	const text = source`
 		${formatMetadata(metadata)}
@@ -27,7 +33,7 @@ function createProxyScript(target: OutputFile, options: Options) {
 		(async function () {
 			GM.xmlHttpRequest({
 				method: "GET",
-				url: "http://127.0.0.1:${options.port ?? "8080"}/${path}",
+				url: "http://127.0.0.1:${options.port ?? "8080"}/${proxyPath}",
 				onload: function(response) {
 					eval(response.responseText)
 				},
@@ -38,7 +44,7 @@ function createProxyScript(target: OutputFile, options: Options) {
 	const encoder = new TextEncoder()
 
 	const proxyScriptFile: OutputFile = {
-		path,
+		path: filePath,
 		contents: encoder.encode(text),
 		hash: createHash("md5").update(text).digest("hex"),
 		text,
@@ -77,7 +83,7 @@ export function userscriptProxy(options: Options = {}) {
 						continue
 					}
 
-					const proxyFile = createProxyScript(file, options)
+					const proxyFile = createProxyScript(build, file, options)
 
 					result.outputFiles.push(proxyFile)
 				}
