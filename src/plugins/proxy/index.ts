@@ -63,7 +63,7 @@ function validateTarget(file: OutputFile, targets?: ProxyTargets) {
 	return true
 }
 
-export function userscriptProxy(options: Options) {
+export function userscriptProxy(options: Options = {}) {
 	return definePlugin({
 		name: "esbuild-plugin-userscript-proxy",
 		setup(build) {
