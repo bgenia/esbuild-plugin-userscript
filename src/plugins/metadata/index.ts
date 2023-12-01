@@ -14,7 +14,7 @@ export function userscriptMetadata(options: Options) {
 			applyPlugins(build, [
 				userscriptInjectCode({
 					at: ["start"],
-					code: `${metadata}\n\n`,
+					code: `${metadata}\n`,
 				}),
 			])
 		},
