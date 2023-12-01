@@ -1,35 +1,70 @@
+import { source } from "common-tags"
+import type { OutputFile } from "esbuild"
 import { createHash } from "node:crypto"
-import { join } from "node:path"
 import { definePlugin } from "@/shared/definePlugin"
 import { formatMetadata, type Metadata } from "@/shared/metadata"
 
-type Proxy = {
-	port: number
-	// Inferred automatically
-	path: string | undefined
-	// Inferred automatically
-	file: string | undefined
+type ProxyTargets = string[] | ((file: OutputFile) => boolean)
+
+export type Options = {
+	metadata?: Metadata
+	port?: number
+	targets?: ProxyTargets
 }
 
-type Options = {
-	metadata: Metadata
-	proxy: Proxy
+function createProxyScript(target: OutputFile, options: Options) {
+	const metadata: Metadata = {
+		...options.metadata,
+		grant: ["GM.xmlHttpRequest", ...(options.metadata?.grant ?? [])],
+		connect: ["127.0.0.1", ...[options.metadata?.connect ?? ""].flat()],
+	}
+
+	const path = target.path.replace(/\.[^.]*?$/, ".proxy$&")
+
+	const text = source`
+		${formatMetadata(metadata)}
+
+		(async function () {
+			GM.xmlHttpRequest({
+				method: "GET",
+				url: "http://127.0.0.1:${options.port ?? "8080"}/${path}",
+				onload: function(response) {
+					eval(response.responseText)
+				},
+			})
+		})()
+	`
+
+	const encoder = new TextEncoder()
+
+	const proxyScriptFile: OutputFile = {
+		path,
+		contents: encoder.encode(text),
+		hash: createHash("md5").update(text).digest("hex"),
+		text,
+	}
+
+	return proxyScriptFile
 }
 
-const template = (proxy: Proxy) => `
-(async function () {
-	GM.xmlHttpRequest({
-		method: "GET",
-		url: "http://127.0.0.1:${proxy.port}${proxy.path}${proxy.file}",
-		onload: function(response) {
-			eval(response.responseText)
-		},
-	})
-})()
-`
+function validateTarget(file: OutputFile, targets?: ProxyTargets) {
+	if (!targets) {
+		return true
+	}
 
-export const userscriptProxy = (options: Options) =>
-	definePlugin({
+	if (Array.isArray(targets) && !targets.includes(file.path)) {
+		return false
+	}
+
+	if (!Array.isArray(targets) && !targets(file)) {
+		return false
+	}
+
+	return true
+}
+
+export function userscriptProxy(options: Options) {
+	return definePlugin({
 		name: "esbuild-plugin-userscript-proxy",
 		setup(build) {
 			build.onEnd((result) => {
@@ -37,24 +72,16 @@ export const userscriptProxy = (options: Options) =>
 					return
 				}
 
-				const { proxy, metadata } = options
+				for (const file of result.outputFiles) {
+					if (!validateTarget(file, options.targets)) {
+						continue
+					}
 
-				const encoder = new TextEncoder()
+					const proxyFile = createProxyScript(file, options)
 
-				proxy.path = result.outputFiles[0]!.path.replace(build.initialOptions.outdir!, "")
-
-				const text = `${formatMetadata({
-					...metadata,
-					grant: ["GM.xmlHttpRequest", ...(metadata.grant ?? [])],
-					connect: ["127.0.0.1", ...(metadata.connect ?? [])],
-				})}\n\n${template(proxy)}`
-
-				result.outputFiles.push({
-					path: join(build.initialOptions.outdir!, `bundle.proxy.user.js`),
-					contents: encoder.encode(text),
-					hash: createHash("md5").update(text).digest("hex"),
-					text,
-				})
+					result.outputFiles.push(proxyFile)
+				}
 			})
 		},
 	})
+}
