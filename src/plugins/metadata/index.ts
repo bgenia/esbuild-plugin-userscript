@@ -25,7 +25,9 @@ export const userscriptMetadata = (options: Options) =>
 						continue
 					}
 
-					resultFile.contents = encoder.encode(`${metadata}\n${file.text}`)
+					resultFile.contents = encoder.encode(
+						`${metadata}\n\n\n${file.text}`,
+					)
 				}
 			})
 		},
