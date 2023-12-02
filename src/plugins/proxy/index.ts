@@ -11,6 +11,15 @@ export type Options = {
 	metadata?: Metadata
 	port?: number
 	targets?: ProxyTargets
+	outFile?: (targetPath: string) => string
+}
+
+function resolveOutFile(targetPath: string, options: Options) {
+	if (!options.outFile) {
+		return targetPath.replace(/^.*?\./, "$&proxy.")
+	}
+
+	return options.outFile(targetPath)
 }
 
 function createProxyScript(
@@ -24,7 +33,7 @@ function createProxyScript(
 		connect: ["127.0.0.1", ...[options.metadata?.connect ?? []].flat()],
 	}
 
-	const filePath = target.path.replace(/^.*?\./, "$&proxy.")
+	const filePath = resolveOutFile(target.path, options)
 	const proxyPath = relative(build.initialOptions.outdir ?? "dist", filePath)
 
 	const text = source`
