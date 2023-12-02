@@ -5,6 +5,8 @@ import { userscriptProxy } from "./plugins/proxy"
 import { applyPlugins } from "./shared/applyPlugins"
 import { definePlugin } from "./shared/definePlugin"
 
+export type { Metadata } from "./shared/metadata"
+
 export function userscript(options?: UserscriptOptions) {
 	return definePlugin({
 		name: "esbuild-plugin-userscript",
