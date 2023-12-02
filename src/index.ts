@@ -5,7 +5,7 @@ import { userscriptProxy } from "./plugins/proxy"
 import { applyPlugins } from "./shared/applyPlugins"
 import { definePlugin } from "./shared/definePlugin"
 
-export function userscript(options: UserscriptOptions) {
+export function userscript(options?: UserscriptOptions) {
 	return definePlugin({
 		name: "esbuild-plugin-userscript",
 		setup(build) {

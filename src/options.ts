@@ -3,14 +3,15 @@ import type { Options as ProxyOptions } from "./plugins/proxy"
 import type { Metadata } from "./shared/metadata"
 
 export type UserscriptOptions = {
-	metadata: Metadata
+	metadata?: Metadata
 	inject?: InjectOptions[]
 	proxy?: ProxyOptions | boolean
 }
 
-export function resolveOptions(options: UserscriptOptions) {
+export function resolveOptions(options: UserscriptOptions = {}) {
 	return {
 		...options,
+		metadata: options.metadata ?? {},
 		inject: options.inject ?? [],
 		proxy: options.proxy === true ? {} : options.proxy,
 	}
