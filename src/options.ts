@@ -5,13 +5,14 @@ import type { Metadata } from "./shared/metadata"
 export type UserscriptOptions = {
 	metadata: Metadata
 	inject?: InjectOptions[]
-	proxy?: ProxyOptions
+	proxy?: ProxyOptions | boolean
 }
 
 export function resolveOptions(options: UserscriptOptions) {
 	return {
 		...options,
 		inject: options.inject ?? [],
+		proxy: options.proxy === true ? {} : options.proxy,
 	}
 }
 
