@@ -24,7 +24,7 @@ function createProxyScript(
 		connect: ["127.0.0.1", ...[options.metadata?.connect ?? []].flat()],
 	}
 
-	const filePath = target.path.replace(/\.[^.]*?$/, ".proxy$&")
+	const filePath = target.path.replace(/^.*?\./, "$&proxy.")
 	const proxyPath = relative(build.initialOptions.outdir ?? "dist", filePath)
 
 	const text = source`
