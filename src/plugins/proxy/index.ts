@@ -34,7 +34,10 @@ function createProxyScript(
 	}
 
 	const filePath = resolveOutFile(target.path, options)
-	const proxyPath = relative(build.initialOptions.outdir ?? "dist", filePath)
+	const proxyPath = relative(
+		build.initialOptions.outdir ?? "dist",
+		target.path,
+	)
 
 	const text = source`
 		${formatMetadata(metadata)}
